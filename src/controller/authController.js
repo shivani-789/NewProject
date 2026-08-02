@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+
 exports.register = async (req, res) => {
 
     try {
@@ -85,6 +86,96 @@ exports.register = async (req, res) => {
 
 };
 
+
+exports.login = async (req, res) => {
+
+    try {
+
+        const {
+            email,
+            password
+        } = req.body;
+
+
+        // Check email and password
+        if (!email || !password) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required"
+            });
+
+        }
+
+
+        // Find user
+        const user = await User.findOne({
+            where: {
+                email
+            }
+        });
+
+
+        // User not found
+        if (!user) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password"
+            });
+
+        }
+
+
+        // Compare password
+        const isPasswordValid = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+
+        // Invalid password
+        if (!isPasswordValid) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password"
+            });
+
+        }
+
+
+        // Login successful
+        return res.status(200).json({
+
+            success: true,
+            message: "Login successful",
+
+            data: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone
+            }
+
+        });
+
+    }
+    catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json({
+
+            success: false,
+            message: "Internal server error",
+            error: error.message
+
+        });
+
+    }
+
+};
 
 
 // const login = async (req, res) => {
